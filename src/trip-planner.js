@@ -7,12 +7,17 @@ export class TripPlanner {
 	static inject = [DialogService];
 	currentIndex = null;
 	@bindable tripTmp;
+	/*
+		state: 0 created, 1 In progress, 2 ready
+	*/
 	@bindable trip = {
+		state:0,
 		title:'',
 		dest:'',
 		category:'',
 		startDate:'',
 		endDate:'',
+		duration:0,
 		todo: [],
 		reminder: ''
 	};
@@ -53,7 +58,7 @@ export class TripPlanner {
 	*/	
 	addTodo(e) {
 		if (e.keyCode == 13 && this.txtTodo.value) {
-			this.trip.todo.push(this.txtTodo.value);
+			this.trip.todo.push({'status':false,'desc':this.txtTodo.value});
 			this.txtTodo.value = '';
 		}
 		return true;
@@ -73,7 +78,6 @@ export class TripPlanner {
 	        index for trips array position that user selects
 	*/	
 	selectRow(trip, index) {
-		console.log(trip.startDate);
 		this.currentIndex = index;
 		this.trip = JSON.parse(JSON.stringify(trip));
 		this.tripTmp = trip; //keep original value
@@ -82,7 +86,6 @@ export class TripPlanner {
 			$(value).on("changeDate", function(val){
 				if(i == 0) {
 					tmpTrip.startDate = this.value;
-					console.log(tmpTrip.startDate);
 				} else if(i == 1) {
 					tmpTrip.endDate = this.value;
 				} else {
@@ -100,11 +103,49 @@ export class TripPlanner {
 		this.trip = JSON.parse(JSON.stringify(this.tripTmp));
 	}
 
+  /*
+	Purpose: Covert milliseconds to days
+	Params: none
+	*/
+	getDays(t){
+			var cd = 24 * 60 * 60 * 1000,
+					ch = 60 * 60 * 1000,
+					d = Math.floor(t / cd),
+					h = Math.floor( (t - d * cd) / ch),
+					m = Math.round( (t - d * cd - h * ch) / 60000),
+					pad = function(n){ return n < 10 ? '0' + n : n; };
+		if( m === 60 ){
+			h++;
+			m = 0;
+		}
+		if( h === 24 ){
+			d++;
+			h = 0;
+		}
+		return d;
+	}
 	/*
 	Purpose: To modify existing trip planner or add new trip planner
 	Params: none
 	*/	
 	save() {
+		if(this.trip.startDate && this.trip.endDate) {
+			let duration = this.getDays(((new Date(this.trip.endDate)).getTime() - 
+												(new Date(this.trip.startDate)).getTime()));
+			
+			this.trip.duration = duration;
+		}
+
+		if(this.trip.todo.length === 0) {
+			this.trip.state = 0;
+		} else {
+			let state = true
+			for(let item in this.trip.todo) {
+				state &= this.trip.todo[item].status;
+			}
+			console.log(state);
+			this.trip.state = state ? 2:1;
+		}
 		if(this.currentIndex == null) {
 			this.trips.push(this.trip);
 			this.resetData();
@@ -188,5 +229,43 @@ export class TripPlanner {
 			todo: [],
 			reminder: ''
 		};;	
+	}
+
+	/*
+	Purpose: When user clicks checkbox, this function will update todo item status. 
+	Params: state: 0 created, 1 In progress, 2 ready
+	*/
+	todoStatusCheck(mouseEvent, item) {
+		item.status = mouseEvent.target.checked;
+		return true;
+	}
+
+	/*
+	Purpose: To get state string
+	Params: state: 0 created, 1 In progress, 2 ready
+	*/		
+	getStateStr(state) {
+		if(state === 2) {
+			return 'Ready';
+		} else if(state === 1) {
+			return 'In Progress';
+		} else {
+			return 'Created';
+		}
+	}
+
+	/*
+	Purpose: To check if today is reminder date
+	Params: redminer for date string format and may be empty
+	*/		
+	getReminderCSS(reminder) {
+		if(reminder) {
+			let duration = this.getDays(((new Date()).getTime() - 
+									(new Date(reminder)).getTime()));
+			if (duration == 0) {
+				return 'reminder';
+			}
+		}
+		return '';
 	}
 }

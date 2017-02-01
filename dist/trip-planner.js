@@ -99,7 +99,7 @@ System.register(['aurelia-framework', 'aurelia-dialog', './map', './weather'], f
 
 				TripPlanner.prototype.addTodo = function addTodo(e) {
 					if (e.keyCode == 13 && this.txtTodo.value) {
-						this.trip.todo.push(this.txtTodo.value);
+						this.trip.todo.push({ 'status': false, 'desc': this.txtTodo.value });
 						this.txtTodo.value = '';
 					}
 					return true;
@@ -110,7 +110,6 @@ System.register(['aurelia-framework', 'aurelia-dialog', './map', './weather'], f
 				};
 
 				TripPlanner.prototype.selectRow = function selectRow(trip, index) {
-					console.log(trip.startDate);
 					this.currentIndex = index;
 					this.trip = JSON.parse(JSON.stringify(trip));
 					this.tripTmp = trip;
@@ -119,7 +118,6 @@ System.register(['aurelia-framework', 'aurelia-dialog', './map', './weather'], f
 						$(value).on("changeDate", function (val) {
 							if (i == 0) {
 								tmpTrip.startDate = this.value;
-								console.log(tmpTrip.startDate);
 							} else if (i == 1) {
 								tmpTrip.endDate = this.value;
 							} else {
@@ -133,7 +131,43 @@ System.register(['aurelia-framework', 'aurelia-dialog', './map', './weather'], f
 					this.trip = JSON.parse(JSON.stringify(this.tripTmp));
 				};
 
+				TripPlanner.prototype.getDays = function getDays(t) {
+					var cd = 24 * 60 * 60 * 1000,
+					    ch = 60 * 60 * 1000,
+					    d = Math.floor(t / cd),
+					    h = Math.floor((t - d * cd) / ch),
+					    m = Math.round((t - d * cd - h * ch) / 60000),
+					    pad = function pad(n) {
+						return n < 10 ? '0' + n : n;
+					};
+					if (m === 60) {
+						h++;
+						m = 0;
+					}
+					if (h === 24) {
+						d++;
+						h = 0;
+					}
+					return d;
+				};
+
 				TripPlanner.prototype.save = function save() {
+					if (this.trip.startDate && this.trip.endDate) {
+						var duration = this.getDays(new Date(this.trip.endDate).getTime() - new Date(this.trip.startDate).getTime());
+
+						this.trip.duration = duration;
+					}
+
+					if (this.trip.todo.length === 0) {
+						this.trip.state = 0;
+					} else {
+						var state = true;
+						for (var item in this.trip.todo) {
+							state &= this.trip.todo[item].status;
+						}
+						console.log(state);
+						this.trip.state = state ? 2 : 1;
+					}
 					if (this.currentIndex == null) {
 						this.trips.push(this.trip);
 						this.resetData();
@@ -188,6 +222,31 @@ System.register(['aurelia-framework', 'aurelia-dialog', './map', './weather'], f
 					};;
 				};
 
+				TripPlanner.prototype.todoStatusCheck = function todoStatusCheck(mouseEvent, item) {
+					item.status = mouseEvent.target.checked;
+					return true;
+				};
+
+				TripPlanner.prototype.getStateStr = function getStateStr(state) {
+					if (state === 2) {
+						return 'Ready';
+					} else if (state === 1) {
+						return 'In Progress';
+					} else {
+						return 'Created';
+					}
+				};
+
+				TripPlanner.prototype.getReminderCSS = function getReminderCSS(reminder) {
+					if (reminder) {
+						var duration = this.getDays(new Date().getTime() - new Date(reminder).getTime());
+						if (duration == 0) {
+							return 'reminder';
+						}
+					}
+					return '';
+				};
+
 				return TripPlanner;
 			}(), _class2.inject = [DialogService], _temp), (_descriptor = _applyDecoratedDescriptor(_class.prototype, 'tripTmp', [bindable], {
 				enumerable: true,
@@ -196,11 +255,13 @@ System.register(['aurelia-framework', 'aurelia-dialog', './map', './weather'], f
 				enumerable: true,
 				initializer: function initializer() {
 					return {
+						state: 0,
 						title: '',
 						dest: '',
 						category: '',
 						startDate: '',
 						endDate: '',
+						duration: 0,
 						todo: [],
 						reminder: ''
 					};
