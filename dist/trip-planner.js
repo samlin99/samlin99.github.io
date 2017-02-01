@@ -113,18 +113,6 @@ System.register(['aurelia-framework', 'aurelia-dialog', './map', './weather'], f
 					this.currentIndex = index;
 					this.trip = JSON.parse(JSON.stringify(trip));
 					this.tripTmp = trip;
-					var tmpTrip = this.trip;
-					$.each(['#txtStartDate', '#txtEndDate', '#txtReminder'], function (i, value) {
-						$(value).on("changeDate", function (val) {
-							if (i == 0) {
-								tmpTrip.startDate = this.value;
-							} else if (i == 1) {
-								tmpTrip.endDate = this.value;
-							} else {
-								tmpTrip.reminder = this.value;
-							}
-						});
-					});
 				};
 
 				TripPlanner.prototype.cancel = function cancel() {
@@ -152,10 +140,12 @@ System.register(['aurelia-framework', 'aurelia-dialog', './map', './weather'], f
 				};
 
 				TripPlanner.prototype.save = function save() {
-					if (this.trip.startDate && this.trip.endDate) {
-						var duration = this.getDays(new Date(this.trip.endDate).getTime() - new Date(this.trip.startDate).getTime());
+					this.trip.startDate = $('#txtStartDate').val();
+					this.trip.endDate = $('#txtEndDate').val();
+					this.trip.reminder = $('#txtReminder').val();
 
-						this.trip.duration = duration;
+					if (this.trip.startDate && this.trip.endDate) {
+						this.trip.duration = this.getDays(new Date(this.trip.endDate).getTime() - new Date(this.trip.startDate).getTime());
 					}
 
 					if (this.trip.todo.length === 0) {
