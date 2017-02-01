@@ -1,0 +1,11 @@
+<template>
+  <ai-dialog>
+    <ai-dialog-body>
+      <iframe width="600" height="450" frameborder="0" style="border:0"
+src="https://www.google.com/maps/embed/v1/place?q=${tgtLocation}&key=AIzaSyAXBonnkSHLBPO99R8hvWMzEIR6GiXWuk4" allowfullscreen></iframe>
+    </ai-dialog-body>
+    <ai-dialog-footer>
+      <button click.trigger="controller.ok(person)">Ok</button>
+    </ai-dialog-footer>
+  </ai-dialog>
+</template>

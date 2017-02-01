@@ -2,7 +2,7 @@ System.register(['bootstrap'], function (_export, _context) {
   "use strict";
 
   function configure(aurelia) {
-    aurelia.use.standardConfiguration().developmentLogging();
+    aurelia.use.standardConfiguration().developmentLogging().plugin('aurelia-table').plugin('aurelia-dialog').plugin('aurelia-bootstrap-datepicker');
 
     aurelia.start().then(function () {
       return aurelia.setRoot();
