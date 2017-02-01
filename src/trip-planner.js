@@ -81,18 +81,6 @@ export class TripPlanner {
 		this.currentIndex = index;
 		this.trip = JSON.parse(JSON.stringify(trip));
 		this.tripTmp = trip; //keep original value
-		let tmpTrip = this.trip;
-		$.each(['#txtStartDate','#txtEndDate','#txtReminder'], function(i, value) {
-			$(value).on("changeDate", function(val){
-				if(i == 0) {
-					tmpTrip.startDate = this.value;
-				} else if(i == 1) {
-					tmpTrip.endDate = this.value;
-				} else {
-					tmpTrip.reminder = this.value;
-				}
-			});
-		});
 	}	
 
 	/*
@@ -108,12 +96,12 @@ export class TripPlanner {
 	Params: none
 	*/
 	getDays(t){
-			var cd = 24 * 60 * 60 * 1000,
-					ch = 60 * 60 * 1000,
-					d = Math.floor(t / cd),
-					h = Math.floor( (t - d * cd) / ch),
-					m = Math.round( (t - d * cd - h * ch) / 60000),
-					pad = function(n){ return n < 10 ? '0' + n : n; };
+		var cd = 24 * 60 * 60 * 1000,
+				ch = 60 * 60 * 1000,
+				d = Math.floor(t / cd),
+				h = Math.floor( (t - d * cd) / ch),
+				m = Math.round( (t - d * cd - h * ch) / 60000),
+				pad = function(n){ return n < 10 ? '0' + n : n; };
 		if( m === 60 ){
 			h++;
 			m = 0;
@@ -129,11 +117,13 @@ export class TripPlanner {
 	Params: none
 	*/	
 	save() {
+		this.trip.startDate = $('#txtStartDate').val(); 
+		this.trip.endDate = $('#txtEndDate').val(); 
+		this.trip.reminder = $('#txtReminder').val(); 
+
 		if(this.trip.startDate && this.trip.endDate) {
-			let duration = this.getDays(((new Date(this.trip.endDate)).getTime() - 
+			this.trip.duration = this.getDays(((new Date(this.trip.endDate)).getTime() - 
 												(new Date(this.trip.startDate)).getTime()));
-			
-			this.trip.duration = duration;
 		}
 
 		if(this.trip.todo.length === 0) {

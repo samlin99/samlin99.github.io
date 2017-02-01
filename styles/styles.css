@@ -305,6 +305,10 @@ img {
 	margin: 5px 0 5px 10px;
 	font-weight: bold;
 }
+.inputSearch {
+	margin: 10px 0 5px 10px;
+	font-weight: bold;
+}
 .bluegreen {
 	background-color: #AFEEEE;
 	width: 10px;

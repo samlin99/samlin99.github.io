@@ -1,6 +1,6 @@
 <template>
 	<div class="divColumn" style="width:60%" aurelia-table="data.bind: trips; display-data.bind: $displayData; filters.bind: filters;">
-		<div>
+		<div class="inputSearch">
 			<input type="text" class="form-control" value.bind="filters[0].value" placeholder="Type to Search"  maxlength="20"/>
 		</div>
 		<div class="note">
@@ -11,7 +11,7 @@
 				<tr class="colWidth">
             <td aut-sort="key:title">Title</td>
             <td aut-sort="key:dest">Dest</td>
-            <td>Duration</td>
+            <td>Duration<br>Day(s)</td>
             <td>Category</td>
             <td>Reminder<br>Set</td>
             <td>Todos<br>#</td>
