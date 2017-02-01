@@ -195,8 +195,7 @@ div.au-stagger {
 }
 
 .divTblBody {
-	margin-top: -20px;
-	height:425px;
+	height:450px;
 	overflow:auto;
 }
 
@@ -232,7 +231,13 @@ img {
   display: table-cell;
 	width: 220px;
 }
+.todo li:nth-child(1) {
+	width: 30px;
+}
 .todo li:nth-child(2) {
+	width: 150px;
+}
+.todo li:nth-child(3) {
 	width: 40px;
 }
 .todoScroll {
@@ -261,4 +266,47 @@ img {
 
 .select-style select:focus {
     outline: none;
+}
+.colWidth {
+	align: left;
+}
+.colWidth td:nth-child(1) {
+	width: 100px;
+}
+.colWidth td:nth-child(2) {
+	width: 100px;
+}
+.colWidth td:nth-child(3) {
+	width: 40px;
+}
+.colWidth td:nth-child(4) {
+	width: 50px;
+}
+.colWidth td:nth-child(5) {
+	width: 50px;
+}
+.colWidth td:nth-child(6) {
+	width: 30px;
+}
+.colWidth td:nth-child(7) {
+	width: 30px;
+}
+.colWidth td:nth-child(8) {
+	width: 25px;
+}
+.colWidth td:nth-child(9) {
+	width: 25px;
+}
+.reminder {
+	background-color: #AFEEEE;
+	font-weight: bold;
+}
+.note {
+	margin: 5px 0 5px 10px;
+	font-weight: bold;
+}
+.bluegreen {
+	background-color: #AFEEEE;
+	width: 10px;
+	height: 10px;
 }
