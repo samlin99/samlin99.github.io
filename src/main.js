@@ -3,7 +3,10 @@ import 'bootstrap';
 export function configure(aurelia) {
   aurelia.use
     .standardConfiguration()
-    .developmentLogging();
+    .developmentLogging()
+	.plugin('aurelia-table')
+	.plugin('aurelia-dialog')
+	.plugin('aurelia-bootstrap-datepicker');
 
   //Uncomment the line below to enable animation.
   //aurelia.use.plugin('aurelia-animator-css');
