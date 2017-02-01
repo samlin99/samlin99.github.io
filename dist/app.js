@@ -19,7 +19,7 @@ System.register([], function (_export, _context) {
 
         App.prototype.configureRouter = function configureRouter(config, router) {
           config.title = 'Aurelia';
-          config.map([{ route: ['', 'welcome'], name: 'welcome', moduleId: 'welcome', nav: true, title: 'Trip Planner' }]);
+          config.map([{ route: ['', 'trip-planner'], name: 'trip-planner', moduleId: 'trip-planner', nav: true, title: 'Trip Planner' }]);
 
           this.router = router;
         };

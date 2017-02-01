@@ -28,10 +28,6 @@ System.register(["aurelia-dialog"], function (_export, _context) {
           this.tgtLocation = encodeURIComponent(tgtLocation);
         };
 
-        Map.prototype.testDelegate = function testDelegate() {
-          alert("Delegation worked");
-        };
-
         return Map;
       }(), _class.inject = [DialogController], _temp));
 
