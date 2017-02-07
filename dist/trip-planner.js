@@ -152,7 +152,6 @@ System.register(['aurelia-framework', 'aurelia-dialog', './map', './weather', '.
 				};
 
 				TripPlanner.prototype.cancel = function cancel() {
-					console.log(this.currentIndex);
 					if (this.currentIndex === null) {
 						this.resetData();
 					} else {
