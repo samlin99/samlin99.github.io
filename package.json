@@ -65,7 +65,6 @@
   "jspm": {
     "dependencies": {
       "aurelia-animator-css": "npm:aurelia-animator-css@^1.0.0",
-      "aurelia-bootstrap-datepicker": "npm:aurelia-bootstrap-datepicker@^0.0.8",
       "aurelia-bootstrapper": "npm:aurelia-bootstrapper@^1.0.0",
       "aurelia-dialog": "npm:aurelia-dialog@^1.0.0-beta.3.0.1",
       "aurelia-fetch-client": "npm:aurelia-fetch-client@^1.0.0",
@@ -82,9 +81,11 @@
       "aurelia-templating-router": "npm:aurelia-templating-router@^1.0.0",
       "bluebird": "npm:bluebird@3.4.1",
       "bootstrap": "github:twbs/bootstrap@^3.3.6",
+      "eonasdan-bootstrap-datetimepicker": "npm:eonasdan-bootstrap-datetimepicker@^4.17.46",
       "fetch": "github:github/fetch@^1.0.0",
       "font-awesome": "npm:font-awesome@4.6.3",
       "jquery": "npm:jquery@2.2.4",
+      "moment": "npm:moment@^2.17.1",
       "text": "github:systemjs/plugin-text@^0.0.8"
     },
     "devDependencies": {}

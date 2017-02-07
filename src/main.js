@@ -5,8 +5,7 @@ export function configure(aurelia) {
     .standardConfiguration()
     .developmentLogging()
 	.plugin('aurelia-table')
-	.plugin('aurelia-dialog')
-	.plugin('aurelia-bootstrap-datepicker');
+	.plugin('aurelia-dialog');
 
   //Uncomment the line below to enable animation.
   //aurelia.use.plugin('aurelia-animator-css');
