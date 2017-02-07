@@ -195,10 +195,13 @@ div.au-stagger {
 }
 
 .divTblBody {
-	height:450px;
+	height:600px;
 	overflow:auto;
 }
-
+.dialogDivTblBody {
+	height:300px;
+	overflow:auto;
+}
 .table-striped tr td {
 	width:150px;
 }
@@ -212,6 +215,9 @@ div.au-stagger {
 	all: none;
 	display: inline-block; 
 	vertical-align: top;
+}
+.table td:nth-child(1) {
+	width: 125px;
 }
 img {
 	cursor: pointer;
@@ -246,22 +252,22 @@ img {
 	overflow-y:auto;
 }
 .select-style {
-    border: 1px solid #ccc;
-    width: 200px;
-		height: 30px;
-    border-radius: 3px;
-    overflow: hidden;
-    background: #fafafa url("img/icon-select.png") no-repeat 90% 50%;
+	border: 1px solid #ccc;
+	width: 200px;
+	height: 30px;
+	border-radius: 3px;
+	overflow: hidden;
+	background: #fafafa url("img/icon-select.png") no-repeat 90% 50%;
 }
 
 .select-style select {
-    padding: 5px 8px;
-    width: 130%;
-    border: none;
-    box-shadow: none;
-    background: transparent;
-    background-image: none;
-    -webkit-appearance: none;
+	padding: 5px 8px;
+	width: 130%;
+	border: none;
+	box-shadow: none;
+	background: transparent;
+	background-image: none;
+	-webkit-appearance: none;
 }
 
 .select-style select:focus {
@@ -297,20 +303,49 @@ img {
 .colWidth td:nth-child(9) {
 	width: 25px;
 }
+
+.dialogReminder {
+	align: left;
+}
+.dialogReminder td:nth-child(1) {
+	width: 20px;
+}
+.dialogReminder td:nth-child(2) {
+	width: 100px;
+}
+.dialogReminder td:nth-child(3) {
+	width: 100px;
+}
+.dialogReminder td:nth-child(4) {
+	width: 40px;
+}
+.dialogReminder td:nth-child(5) {
+	width: 50px;
+}
+.dialogReminder td:nth-child(6) {
+	width: 100px;
+}
+.dialogReminder td:nth-child(7) {
+	width: 30px;
+}
+.dialogReminder td:nth-child(8) {
+	width: 30px;
+}
 .reminder {
 	background-color: #AFEEEE;
 	font-weight: bold;
 }
-.note {
-	margin: 5px 0 5px 10px;
-	font-weight: bold;
-}
 .inputSearch {
-	margin: 10px 0 5px 10px;
+	margin-left: 10px;
+	margin-right: 10px;
 	font-weight: bold;
 }
 .bluegreen {
 	background-color: #AFEEEE;
 	width: 10px;
 	height: 10px;
+}
+ai-dialog-overlay.active {
+  background-color: #e7e7e7;
+  opacity: .5;
 }

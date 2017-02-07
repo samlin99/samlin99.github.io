@@ -8,7 +8,6 @@ System.config({
   },
   map: {
     "aurelia-animator-css": "npm:aurelia-animator-css@1.0.1",
-    "aurelia-bootstrap-datepicker": "npm:aurelia-bootstrap-datepicker@0.0.8",
     "aurelia-bootstrapper": "npm:aurelia-bootstrapper@1.0.0",
     "aurelia-dialog": "npm:aurelia-dialog@1.0.0-beta.3.0.1",
     "aurelia-fetch-client": "npm:aurelia-fetch-client@1.0.1",
@@ -25,15 +24,20 @@ System.config({
     "aurelia-templating-router": "npm:aurelia-templating-router@1.0.0",
     "bluebird": "npm:bluebird@3.4.1",
     "bootstrap": "github:twbs/bootstrap@3.3.7",
+    "eonasdan-bootstrap-datetimepicker": "npm:eonasdan-bootstrap-datetimepicker@4.17.46",
     "fetch": "github:github/fetch@1.0.0",
     "font-awesome": "npm:font-awesome@4.6.3",
     "jquery": "npm:jquery@2.2.4",
+    "moment": "npm:moment@2.17.1",
     "text": "github:systemjs/plugin-text@0.0.8",
     "github:jspm/nodelibs-assert@0.1.0": {
       "assert": "npm:assert@1.4.1"
     },
     "github:jspm/nodelibs-buffer@0.1.0": {
       "buffer": "npm:buffer@3.6.0"
+    },
+    "github:jspm/nodelibs-path@0.1.0": {
+      "path-browserify": "npm:path-browserify@0.0.0"
     },
     "github:jspm/nodelibs-process@0.1.2": {
       "process": "npm:process@0.11.9"
@@ -63,9 +67,6 @@ System.config({
       "aurelia-metadata": "npm:aurelia-metadata@1.0.3",
       "aurelia-pal": "npm:aurelia-pal@1.2.0",
       "aurelia-task-queue": "npm:aurelia-task-queue@1.1.0"
-    },
-    "npm:aurelia-bootstrap-datepicker@0.0.8": {
-      "bootstrap-datepicker": "npm:bootstrap-datepicker@1.6.4"
     },
     "npm:aurelia-bootstrapper@1.0.0": {
       "aurelia-event-aggregator": "npm:aurelia-event-aggregator@1.0.0",
@@ -184,9 +185,9 @@ System.config({
     "npm:bluebird@3.4.1": {
       "process": "github:jspm/nodelibs-process@0.1.2"
     },
-    "npm:bootstrap-datepicker@1.6.4": {
+    "npm:bootstrap@3.3.7": {
       "fs": "github:jspm/nodelibs-fs@0.1.2",
-      "jquery": "npm:jquery@2.2.4",
+      "path": "github:jspm/nodelibs-path@0.1.0",
       "process": "github:jspm/nodelibs-process@0.1.2"
     },
     "npm:buffer@3.6.0": {
@@ -197,11 +198,24 @@ System.config({
       "isarray": "npm:isarray@1.0.0",
       "process": "github:jspm/nodelibs-process@0.1.2"
     },
+    "npm:eonasdan-bootstrap-datetimepicker@4.17.46": {
+      "bootstrap": "npm:bootstrap@3.3.7",
+      "jquery": "npm:jquery@2.2.4",
+      "moment": "npm:moment@2.17.1",
+      "moment-timezone": "npm:moment-timezone@0.4.1"
+    },
     "npm:font-awesome@4.6.3": {
       "css": "github:systemjs/plugin-css@0.1.31"
     },
     "npm:inherits@2.0.1": {
       "util": "github:jspm/nodelibs-util@0.1.0"
+    },
+    "npm:moment-timezone@0.4.1": {
+      "moment": "npm:moment@2.6.0",
+      "systemjs-json": "github:systemjs/plugin-json@0.1.2"
+    },
+    "npm:path-browserify@0.0.0": {
+      "process": "github:jspm/nodelibs-process@0.1.2"
     },
     "npm:process@0.11.9": {
       "assert": "github:jspm/nodelibs-assert@0.1.0",
@@ -216,24 +230,6 @@ System.config({
       "indexof": "npm:indexof@0.0.1"
     }
   },
-  depCache: {
-    "main.js": [
-      "bootstrap"
-    ],
-    "map.js": [
-      "aurelia-dialog"
-    ],
-    "trip-planner.js": [
-      "aurelia-framework",
-      "aurelia-dialog",
-      "./map",
-      "./weather"
-    ],
-    "weather.js": [
-      "aurelia-dialog",
-      "aurelia-framework"
-    ]
-  },
   bundles: {
     "app-build.js": [
       "app.html!github:systemjs/plugin-text@0.0.8.js",
@@ -242,8 +238,11 @@ System.config({
       "map.html!github:systemjs/plugin-text@0.0.8.js",
       "map.js",
       "nav-bar.html!github:systemjs/plugin-text@0.0.8.js",
+      "reminder.html!github:systemjs/plugin-text@0.0.8.js",
+      "reminder.js",
       "trip-planner.html!github:systemjs/plugin-text@0.0.8.js",
       "trip-planner.js",
+      "utilities.js",
       "weather.html!github:systemjs/plugin-text@0.0.8.js",
       "weather.js"
     ],
@@ -338,6 +337,33 @@ System.config({
       "npm:aurelia-templating@1.2.0/aurelia-templating.js",
       "npm:jquery@2.2.4.js",
       "npm:jquery@2.2.4/dist/jquery.js"
+    ]
+  },
+  depCache: {
+    "main.js": [
+      "bootstrap"
+    ],
+    "map.js": [
+      "aurelia-dialog"
+    ],
+    "reminder.js": [
+      "aurelia-dialog"
+    ],
+    "trip-planner.js": [
+      "aurelia-framework",
+      "aurelia-dialog",
+      "./map",
+      "./weather",
+      "./reminder",
+      "eonasdan-bootstrap-datetimepicker",
+      "moment"
+    ],
+    "utilities.js": [
+      "moment"
+    ],
+    "weather.js": [
+      "aurelia-dialog",
+      "aurelia-framework"
     ]
   }
 });

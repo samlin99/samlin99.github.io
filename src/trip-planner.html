@@ -1,38 +1,48 @@
 <template>
-	<div class="divColumn" style="width:60%" aurelia-table="data.bind: trips; display-data.bind: $displayData; filters.bind: filters;">
-		<div class="inputSearch">
+	<require from="./utilities"></require>
+	<div style="width:90%;margin-top:15px;">
+		<div class="form-group inputSearch">
 			<input type="text" class="form-control" value.bind="filters[0].value" placeholder="Type to Search"  maxlength="20"/>
 		</div>
-		<div class="note">
-			<span class="bluegreen">&nbsp;&nbsp;&nbsp;&nbsp;</span> indicates redminder event
+		<div class="form-group inputSearch">
+			 <label for="eyeColor">Category</label>
+			<select class="form-control" value.bind="filters[1].value">
+				<option></option>
+				<option repeat.for="catItem of category" >${catItem}</option>
+			</select>
 		</div>
+		<div class="form-group inputSearch">
+				<button class="btn btn-default" click.trigger="resetData()">Add New Trip</button>
+				<button class="btn btn-default" click.trigger="startReminder(true)">Open Reminder</button>
+		</div>	
+	</div>
+	<div class="divColumn" style="width:60%;">
 		<div class="divTblBody">
-    <table class="table table-striped" width="90%">
-				<tr class="colWidth">
-            <td aut-sort="key:title">Title</td>
-            <td aut-sort="key:dest">Dest</td>
-            <td>Duration<br>Day(s)</td>
-            <td>Category</td>
-            <td>Reminder<br>Set</td>
-            <td>Todos<br>#</td>
-            <td>State</td>
-            <td></td>
-            <td></td>
-        </tr>			
- 				<tr class="colWidth" repeat.for="item of $displayData" click.trigger="selectRow(item, $index)" aut-select="row.bind: item; selected-class: info" >
-					<td class="${getReminderCSS(item.reminder)}">${item.title}</td>
-					<td>${item.dest}</td>
-					<td>${item.duration}</td>
-					<td>${item.category}</td>
-					<td>${item.reminder}</td>
-					<td>${item.todo.length}</td>
-					<td>${getStateStr(item.state)}</td>
-					<td><img src="images/gmap.png" width="22" height="20" click.trigger="openMap(item.dest)"></td>
-					<td><img src="images/weather.png" width="22" height="20" click.trigger="openWeather(item.dest)"></td>
-				</tr>
+    <table class="table table-striped" width="90%" aurelia-table="data.bind: trips; display-data.bind: $displayData; filters.bind: filters;">
+			<tr class="colWidth">
+				<td aut-sort="key:title">Title</td>
+				<td aut-sort="key:dest">Dest</td>
+				<td>Duration<br>Day(s)</td>
+				<td aut-sort="key:category">Category</td>
+				<td aut-sort="key:reminder">Reminder</td>
+				<td>#<br>Todos</td>
+				<td>State</td>
+				<td></td>
+				<td></td>
+			</tr>			
+			<tr class="colWidth" repeat.for="item of $displayData" click.trigger="selectRow(item, $index)" aut-select="row.bind: item; selected-class: info" >
+				<td>${item.title}</td>
+				<td>${item.dest}</td>
+				<td>${item.duration}</td>
+				<td>${item.category}</td>
+				<td>${item.reminder | dateFormat}</td>
+				<td>${item.todo.length}</td>
+				<td>${item.state | stateFormat}</td>
+				<td><img src="images/gmap.png" width="22" height="20" click.trigger="openMap(item.dest)"></td>
+				<td><img src="images/weather.png" width="22" height="20" click.trigger="openWeather(item.dest)"></td>
+			</tr>
 		</table>
 		</div>
-		<div align="right"><button class="btn btn-default" click.trigger="resetData()">Add New Trip</button></div>
 	</div>
 	<div class="divColumn" style="width:30%;margin-left:10px;">
 		<table class="table">
@@ -57,12 +67,8 @@
 					<label for="txtDest">Category:</label>
 				</td>
 				<td>
-					<select class="select-style" value.bind="trip.category">
-						<option value="Business">Business</option>
-						<option value="Personal">Personal</option>
-						<option value="Interview">Interview</option>
-						<option value="School">School</option>
-						<option value="Vacation">Vacation</option>
+					<select class="form-control" value.bind="trip.category">
+						<option repeat.for="catItem of category" >${catItem}</option>
 					</select>
 				</td>
 			</tr>				
@@ -71,21 +77,31 @@
 					<label>Start Date:</label>
 				</td>
 				<td>
-					<div class="input-group date">
-						<input type="text" class="form-control" id="txtStartDate" value.bind="trip.startDate"><span class="input-group-addon"><i class="glyphicon glyphicon-th" maxlength="10"></i></span>
+					<div class="form-group">
+						<div class='input-group date' id='txtStartDate'>
+								<input type='text' class="form-control" />
+								<span class="input-group-addon">
+										<span class="glyphicon glyphicon-calendar"></span>
+								</span>
+						</div>
 					</div>
 				</td>
-			</tr>				
+			</tr>			
 			<tr>
 				<td>
 					<label>End Date:</label>
 				</td>
 				<td>
-					<div class="input-group date">
-						<input type="text" class="form-control" id="txtEndDate" value.bind="trip.endDate"><span class="input-group-addon"><i class="glyphicon glyphicon-th" maxlength="10"></i></span>
+					<div class="form-group">
+						<div class='input-group date' id='txtEndDate'>
+								<input type='text' class="form-control" />
+								<span class="input-group-addon">
+										<span class="glyphicon glyphicon-calendar"></span>
+								</span>
+						</div>
 					</div>
 				</td>
-			</tr>				
+			</tr>			
 			<tr>
 				<td>
 					<label>Todo:</label>
@@ -105,9 +121,13 @@
 					<label>Reminder:</label>
 				</td>
 				<td>
-					<div class="input-group date">
-						<input type="text" class="form-control" id="txtReminder" value.bind="trip.reminder"><span class="input-group-addon"><i class="glyphicon glyphicon-th" maxlength="10"></i></span>
-					</div>				
+					<div class='input-group date' id='txtReminder'>
+						<input type='text' class="form-control" />
+						<span class="input-group-addon">
+								<span class="glyphicon glyphicon-calendar"></span>
+						</span>
+					</div>
+					<div><input type="checkbox" class="form-group" checked.bind="trip.dismiss" /> Dismiss</div>
 				</td>
 			</tr>				
 			<tr>

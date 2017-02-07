@@ -2,31 +2,42 @@ import {bindable} from 'aurelia-framework';
 import {DialogService} from 'aurelia-dialog';
 import {Map} from './map';
 import {Weather} from './weather';
+import {Reminder} from './reminder';
+import {datetimepicker} from 'eonasdan-bootstrap-datetimepicker';
+import moment from 'moment';
 
 export class TripPlanner {
 	static inject = [DialogService];
 	currentIndex = null;
-	@bindable tripTmp;
+	tripTmp;
 	/*
 		state: 0 created, 1 In progress, 2 ready
 	*/
-	@bindable trip = {
+	trip = {
 		state:0,
 		title:'',
 		dest:'',
-		category:'',
+		category:'None',
 		startDate:'',
 		endDate:'',
 		duration:0,
 		todo: [],
-		reminder: ''
+		reminder: '',
+		dismiss: false
 	};
-	@bindable trips = [];
+	trips = [];
+	category = ['None','Business Trip','Vacation'];
 
 	filters = [
-		{value: '', keys: ['title', 'dest', 'todo']}
+		{value: '', keys: ['title', 'dest', 'todo']},
+		{value: '', keys: ['category']}
 	];
-	
+	snoozeCount = 0;
+
+	/*
+	Purpose: Class constrauctor. Loads once per instance initiates
+	Params: dialogService for aurelia-dialog. 
+	*/	
 	constructor(dialogService) {
 		this.dialogService = dialogService;
 		this.geocoder = new google.maps.Geocoder();	
@@ -40,18 +51,90 @@ export class TripPlanner {
 	}	
 
 	/*
-	Purpose: This is Aurelia default structure. attached() will be called during page initiliazation
+	Purpose: This method gets called when the View is attached to the DOM. Here is where you will do your DOM manipulation, wrap elements in jQuery objects or whatever you like. All work with the DOM (especially plugins) should be done within this method.
 	Params: none
 	*/
 	attached() {
-		$.each(['#txtStartDate','#txtEndDate','#txtReminder'], function(index, value) {
-			$(value).datepicker({
-					autoclose: true,
-					todayHighlight: true
-			});		
+		let defaultConf = {
+			minDate: new Date,
+			defaultDate: new Date,
+			format: 'MM/DD/YYYY',
+			showTodayButton: true,
+			stepping: 5
+		};
+		$('#txtStartDate').datetimepicker(defaultConf);
+		$('#txtEndDate').datetimepicker(
+			$.extend(defaultConf,{useCurrent: false})
+			);
+		defaultConf.format = "MM/DD/YYYY hh:mm A";
+		delete defaultConf.minDate;
+		delete defaultConf.defaultDate;
+		$('#txtReminder').datetimepicker(
+			$.extend(defaultConf,{useCurrent: false})
+		);
+		
+		$("#txtStartDate").on("dp.change", function (e) {
+			// reset endDate's minDate when user modifies startDate 
+			$('#txtEndDate').data("DateTimePicker").minDate(e.date);
+			// if startDate is after endDate then reset endDate to be same as startDate
+			if(!e.date.isBefore($('#txtEndDate').data("DateTimePicker").date())) {
+				$('#txtEndDate').data("DateTimePicker").date(e.date);
+			}
 		});
+		this.startReminder();
+		this.startTimer(60000);
 	}
 
+	/*
+	Purpose: This method is called when the View is detached from the DOM. If you registered events in the attached method, you would probably unbind them in here. This is your chance to free up some memory and clean the slate.
+	Params: none
+	*/	
+	detached() {
+		clearInterval(intervalID);
+	}
+
+	/*
+	Purpose: Open reminder dialog if there are trips to reminder user
+	Params: doOpen for open up reminder dialog regardless snoonze or timer logic
+	*/
+	startReminder(doOpen) {
+		if (!doOpen && this.snoozeCount >= 1 && this.snoozeCount <= 5) {
+			this.snoozeCount++;
+		} else {
+			let localTrips = this.trips;
+			// save target reminder trips index location to indexAry
+			// this will shorten looping when generating view in reminder dialog
+			let indexAry = [];
+			let cNow = moment();
+			for(let i in this.trips) {
+				if(this.trips[i].reminder) {
+					if(moment(this.trips[i].reminder).isBefore(cNow) && !localTrips[i].dismiss) {
+						indexAry.push(i);
+					}
+				}
+			}
+			if((indexAry.length > 0 && !this.dialogService.hasActiveDialog) || doOpen) {
+				this.dialogService.open({ viewModel: Reminder, model: {indexAry, localTrips}}).then(response => {
+					if (!response.wasCancelled) {
+						this.snoozeCount = 1;
+					}
+				});						
+			}
+		}
+	}
+
+	/*
+	Purpose: Starting reminder timer
+	Params: duration for executing function at specified interval
+	*/
+	startTimer(duration) {
+		this.intervalID = setInterval(() => {
+			this.startReminder();
+			},
+			duration
+		);
+	}
+	
 	/*
 	Purpose: This function will help to add trip todo item
 	Params: e for keyevent
@@ -80,6 +163,16 @@ export class TripPlanner {
 	selectRow(trip, index) {
 		this.currentIndex = index;
 		this.trip = JSON.parse(JSON.stringify(trip));
+		// data may be older than current datere 
+		// resetting start and end date miniDate & current date. 
+		$('#txtStartDate').data("DateTimePicker").minDate(moment(this.trip.startDate));
+		$('#txtStartDate').data("DateTimePicker").date(moment(this.trip.startDate));
+		$('#txtEndDate').data("DateTimePicker").minDate(moment(this.trip.startDate));
+		$('#txtEndDate').data("DateTimePicker").date(moment(this.trip.endDate));
+
+		if(this.trip.reminder) {
+			$('#txtReminder').data("DateTimePicker").date(moment(this.trip.reminder));			
+		}
 		this.tripTmp = trip; //keep original value
 	}	
 
@@ -88,7 +181,23 @@ export class TripPlanner {
 	Params: none
 	*/	
 	cancel() {
-		this.trip = JSON.parse(JSON.stringify(this.tripTmp));
+		// currentIndex is not nulll means that user is modifying existing trip
+		// otherwise, user is creating new trip but like to cancel
+		if(this.currentIndex) {
+			this.trip = JSON.parse(JSON.stringify(this.tripTmp));
+			$('#txtStartDate').data("DateTimePicker").minDate(moment(this.trip.startDate));
+			$('#txtStartDate').data("DateTimePicker").date(moment(this.trip.startDate));
+			$('#txtEndDate').data("DateTimePicker").minDate(moment(this.trip.startDate));
+			$('#txtEndDate').data("DateTimePicker").date(moment(this.trip.endDate));
+			if(this.trip.reminder) {
+				$('#txtReminder').data("DateTimePicker").date(moment(this.trip.reminder));
+			} else {
+				$('#txtReminder').data("DateTimePicker").date(null);
+			}			
+		} else {
+			this.resetData();
+		}
+
 	}
 
   /*
@@ -112,15 +221,15 @@ export class TripPlanner {
 		}
 		return d;
 	}
+	
 	/*
 	Purpose: To modify existing trip planner or add new trip planner
 	Params: none
 	*/	
 	save() {
-		this.trip.startDate = $('#txtStartDate').val(); 
-		this.trip.endDate = $('#txtEndDate').val(); 
-		this.trip.reminder = $('#txtReminder').val(); 
-
+		this.trip.startDate = $('#txtStartDate').data("DateTimePicker").date(); 
+		this.trip.endDate = $('#txtEndDate').data("DateTimePicker").date(); 
+		this.trip.reminder = $('#txtReminder').data("DateTimePicker").date(); 
 		if(this.trip.startDate && this.trip.endDate) {
 			this.trip.duration = this.getDays(((new Date(this.trip.endDate)).getTime() - 
 												(new Date(this.trip.startDate)).getTime()));
@@ -133,9 +242,9 @@ export class TripPlanner {
 			for(let item in this.trip.todo) {
 				state &= this.trip.todo[item].status;
 			}
-			console.log(state);
 			this.trip.state = state ? 2:1;
 		}
+		
 		if(this.currentIndex == null) {
 			this.trips.push(this.trip);
 			this.resetData();
@@ -144,6 +253,7 @@ export class TripPlanner {
 				this.tripTmp[v] = this.trip[v];
 			}		
 		}
+		// save trips data into browser localStorage
 		localStorage.setItem("tripPlannerData", JSON.stringify(this.trips));
 	}
 
@@ -206,19 +316,29 @@ export class TripPlanner {
 	}
 
 	/*
-	Purpose: To reset trip planner if user likes to create new one
+	Purpose: To reset trip planner input fields if user likes to create new one
 	Params: 
 	*/	
 	resetData() {
 		this.currentIndex = null;
-		this.trip = {title:'',
+		$('#txtStartDate').data("DateTimePicker").minDate(moment());
+		$('#txtEndDate').data("DateTimePicker").minDate(moment());
+		$('#txtStartDate').data("DateTimePicker").date(moment());
+		$('#txtEndDate').data("DateTimePicker").date(moment());
+		$('#txtReminder').data("DateTimePicker").date(null);
+		$('#txtReminder').data("DateTimePicker").defaultDate(null);
+		this.trip = {
+			state:0,
+			title:'',
 			dest:'',
+			category:'None',
 			startDate:'',
-			category:'',
 			endDate:'',
+			duration:0,
 			todo: [],
-			reminder: ''
-		};;	
+			reminder: '',
+			dismiss: false
+		};
 	}
 
 	/*
@@ -230,32 +350,4 @@ export class TripPlanner {
 		return true;
 	}
 
-	/*
-	Purpose: To get state string
-	Params: state: 0 created, 1 In progress, 2 ready
-	*/		
-	getStateStr(state) {
-		if(state === 2) {
-			return 'Ready';
-		} else if(state === 1) {
-			return 'In Progress';
-		} else {
-			return 'Created';
-		}
-	}
-
-	/*
-	Purpose: To check if today is reminder date
-	Params: redminer for date string format and may be empty
-	*/		
-	getReminderCSS(reminder) {
-		if(reminder) {
-			let duration = this.getDays(((new Date()).getTime() - 
-									(new Date(reminder)).getTime()));
-			if (duration == 0) {
-				return 'reminder';
-			}
-		}
-		return '';
-	}
 }

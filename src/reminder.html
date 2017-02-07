@@ -1,0 +1,38 @@
+<template>
+	<require from="./utilities"></require>
+  <ai-dialog>
+		<ai-dialog-header>
+			<h4>Reminder List</h4>
+		</ai-dialog-header>	
+    <ai-dialog-body>
+			<div class="dialogDivTblBody">
+			<table class="table table-striped" width="90%" aurelia-table="data.bind: indexAry; display-data.bind: $displayData;">
+				<tr class="dialogReminder">
+					<td></td>
+					<td aut-sort="key:title">Title</td>
+					<td aut-sort="key:dest">Dest</td>
+					<td>Duration<br>Day(s)</td>
+					<td>Category</td>
+					<td>Reminder<br>Set</td>
+					<td>#<br>Todos</td>
+					<td>State</td>
+				</tr>			
+				<tr class="dialogReminder" repeat.for="item of $displayData">
+					<td><input type="checkbox" class="form-group" click.trigger="addRemoveDismiss(item,$event)" /></td>
+					<td>${trips[item].title}</td>
+					<td>${trips[item].dest}</td>
+					<td>${trips[item].duration}</td>
+					<td>${trips[item].category}</td>
+					<td>${trips[item].reminder | dateFormat}</td>
+					<td>${trips[item].todo.length}</td>
+					<td>${trips[item].state | stateFormat}</td>
+				</tr>
+			</table>
+			</div>			
+    </ai-dialog-body>
+    <ai-dialog-footer>
+      <button click.trigger="dismiss()">Dismiss</button>
+      <button click.trigger="controller.ok()">Snooze 5 mins</button>
+    </ai-dialog-footer>
+  </ai-dialog>
+</template>

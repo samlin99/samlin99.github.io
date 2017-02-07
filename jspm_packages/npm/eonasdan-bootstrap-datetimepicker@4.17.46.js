@@ -1,0 +1,1 @@
+module.exports = require("npm:eonasdan-bootstrap-datetimepicker@4.17.46/src/js/bootstrap-datetimepicker.js");

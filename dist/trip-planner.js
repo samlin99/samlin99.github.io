@@ -1,55 +1,12 @@
-System.register(['aurelia-framework', 'aurelia-dialog', './map', './weather'], function (_export, _context) {
+System.register(['aurelia-framework', 'aurelia-dialog', './map', './weather', './reminder', 'eonasdan-bootstrap-datetimepicker', 'moment'], function (_export, _context) {
 	"use strict";
 
-	var bindable, DialogService, Map, Weather, _desc, _value, _class, _descriptor, _descriptor2, _descriptor3, _class2, _temp, TripPlanner;
-
-	function _initDefineProp(target, property, descriptor, context) {
-		if (!descriptor) return;
-		Object.defineProperty(target, property, {
-			enumerable: descriptor.enumerable,
-			configurable: descriptor.configurable,
-			writable: descriptor.writable,
-			value: descriptor.initializer ? descriptor.initializer.call(context) : void 0
-		});
-	}
+	var bindable, DialogService, Map, Weather, Reminder, datetimepicker, moment, _class, _temp, TripPlanner;
 
 	function _classCallCheck(instance, Constructor) {
 		if (!(instance instanceof Constructor)) {
 			throw new TypeError("Cannot call a class as a function");
 		}
-	}
-
-	function _applyDecoratedDescriptor(target, property, decorators, descriptor, context) {
-		var desc = {};
-		Object['ke' + 'ys'](descriptor).forEach(function (key) {
-			desc[key] = descriptor[key];
-		});
-		desc.enumerable = !!desc.enumerable;
-		desc.configurable = !!desc.configurable;
-
-		if ('value' in desc || desc.initializer) {
-			desc.writable = true;
-		}
-
-		desc = decorators.slice().reverse().reduce(function (desc, decorator) {
-			return decorator(target, property, desc) || desc;
-		}, desc);
-
-		if (context && desc.initializer !== void 0) {
-			desc.value = desc.initializer ? desc.initializer.call(context) : void 0;
-			desc.initializer = undefined;
-		}
-
-		if (desc.initializer === void 0) {
-			Object['define' + 'Property'](target, property, desc);
-			desc = null;
-		}
-
-		return desc;
-	}
-
-	function _initializerWarningHelper(descriptor, context) {
-		throw new Error('Decorating class property failed. Please ensure that transform-class-properties is enabled.');
 	}
 
 	return {
@@ -61,21 +18,35 @@ System.register(['aurelia-framework', 'aurelia-dialog', './map', './weather'], f
 			Map = _map.Map;
 		}, function (_weather) {
 			Weather = _weather.Weather;
+		}, function (_reminder) {
+			Reminder = _reminder.Reminder;
+		}, function (_eonasdanBootstrapDatetimepicker) {
+			datetimepicker = _eonasdanBootstrapDatetimepicker.datetimepicker;
+		}, function (_moment) {
+			moment = _moment.default;
 		}],
 		execute: function () {
-			_export('TripPlanner', TripPlanner = (_class = (_temp = _class2 = function () {
+			_export('TripPlanner', TripPlanner = (_temp = _class = function () {
 				function TripPlanner(dialogService) {
 					_classCallCheck(this, TripPlanner);
 
 					this.currentIndex = null;
-
-					_initDefineProp(this, 'tripTmp', _descriptor, this);
-
-					_initDefineProp(this, 'trip', _descriptor2, this);
-
-					_initDefineProp(this, 'trips', _descriptor3, this);
-
-					this.filters = [{ value: '', keys: ['title', 'dest', 'todo'] }];
+					this.trip = {
+						state: 0,
+						title: '',
+						dest: '',
+						category: 'None',
+						startDate: '',
+						endDate: '',
+						duration: 0,
+						todo: [],
+						reminder: '',
+						dismiss: false
+					};
+					this.trips = [];
+					this.category = ['None', 'Business Trip', 'Vacation'];
+					this.filters = [{ value: '', keys: ['title', 'dest', 'todo'] }, { value: '', keys: ['category'] }];
+					this.snoozeCount = 0;
 
 					this.dialogService = dialogService;
 					this.geocoder = new google.maps.Geocoder();
@@ -89,12 +60,68 @@ System.register(['aurelia-framework', 'aurelia-dialog', './map', './weather'], f
 				}
 
 				TripPlanner.prototype.attached = function attached() {
-					$.each(['#txtStartDate', '#txtEndDate', '#txtReminder'], function (index, value) {
-						$(value).datepicker({
-							autoclose: true,
-							todayHighlight: true
-						});
+					var defaultConf = {
+						minDate: new Date(),
+						defaultDate: new Date(),
+						format: 'MM/DD/YYYY',
+						showTodayButton: true,
+						stepping: 5
+					};
+					$('#txtStartDate').datetimepicker(defaultConf);
+					$('#txtEndDate').datetimepicker($.extend(defaultConf, { useCurrent: false }));
+					defaultConf.format = "MM/DD/YYYY hh:mm A";
+					delete defaultConf.minDate;
+					delete defaultConf.defaultDate;
+					$('#txtReminder').datetimepicker($.extend(defaultConf, { useCurrent: false }));
+
+					$("#txtStartDate").on("dp.change", function (e) {
+						$('#txtEndDate').data("DateTimePicker").minDate(e.date);
+
+						if (!e.date.isBefore($('#txtEndDate').data("DateTimePicker").date())) {
+							$('#txtEndDate').data("DateTimePicker").date(e.date);
+						}
 					});
+					this.startReminder();
+					this.startTimer(60000);
+				};
+
+				TripPlanner.prototype.detached = function detached() {
+					clearInterval(intervalID);
+				};
+
+				TripPlanner.prototype.startReminder = function startReminder(doOpen) {
+					var _this = this;
+
+					if (!doOpen && this.snoozeCount >= 1 && this.snoozeCount <= 5) {
+						this.snoozeCount++;
+					} else {
+						var localTrips = this.trips;
+
+						var indexAry = [];
+						var cNow = moment();
+						for (var i in this.trips) {
+							if (this.trips[i].reminder) {
+								if (moment(this.trips[i].reminder).isBefore(cNow) && !localTrips[i].dismiss) {
+									indexAry.push(i);
+								}
+							}
+						}
+						if (indexAry.length > 0 && !this.dialogService.hasActiveDialog || doOpen) {
+							this.dialogService.open({ viewModel: Reminder, model: { indexAry: indexAry, localTrips: localTrips } }).then(function (response) {
+								if (!response.wasCancelled) {
+									_this.snoozeCount = 1;
+								}
+							});
+						}
+					}
+				};
+
+				TripPlanner.prototype.startTimer = function startTimer(duration) {
+					var _this2 = this;
+
+					this.intervalID = setInterval(function () {
+						_this2.startReminder();
+					}, duration);
 				};
 
 				TripPlanner.prototype.addTodo = function addTodo(e) {
@@ -112,11 +139,33 @@ System.register(['aurelia-framework', 'aurelia-dialog', './map', './weather'], f
 				TripPlanner.prototype.selectRow = function selectRow(trip, index) {
 					this.currentIndex = index;
 					this.trip = JSON.parse(JSON.stringify(trip));
+
+					$('#txtStartDate').data("DateTimePicker").minDate(moment(this.trip.startDate));
+					$('#txtStartDate').data("DateTimePicker").date(moment(this.trip.startDate));
+					$('#txtEndDate').data("DateTimePicker").minDate(moment(this.trip.startDate));
+					$('#txtEndDate').data("DateTimePicker").date(moment(this.trip.endDate));
+
+					if (this.trip.reminder) {
+						$('#txtReminder').data("DateTimePicker").date(moment(this.trip.reminder));
+					}
 					this.tripTmp = trip;
 				};
 
 				TripPlanner.prototype.cancel = function cancel() {
-					this.trip = JSON.parse(JSON.stringify(this.tripTmp));
+					if (this.currentIndex) {
+						this.trip = JSON.parse(JSON.stringify(this.tripTmp));
+						$('#txtStartDate').data("DateTimePicker").minDate(moment(this.trip.startDate));
+						$('#txtStartDate').data("DateTimePicker").date(moment(this.trip.startDate));
+						$('#txtEndDate').data("DateTimePicker").minDate(moment(this.trip.startDate));
+						$('#txtEndDate').data("DateTimePicker").date(moment(this.trip.endDate));
+						if (this.trip.reminder) {
+							$('#txtReminder').data("DateTimePicker").date(moment(this.trip.reminder));
+						} else {
+							$('#txtReminder').data("DateTimePicker").date(null);
+						}
+					} else {
+						this.resetData();
+					}
 				};
 
 				TripPlanner.prototype.getDays = function getDays(t) {
@@ -140,10 +189,9 @@ System.register(['aurelia-framework', 'aurelia-dialog', './map', './weather'], f
 				};
 
 				TripPlanner.prototype.save = function save() {
-					this.trip.startDate = $('#txtStartDate').val();
-					this.trip.endDate = $('#txtEndDate').val();
-					this.trip.reminder = $('#txtReminder').val();
-
+					this.trip.startDate = $('#txtStartDate').data("DateTimePicker").date();
+					this.trip.endDate = $('#txtEndDate').data("DateTimePicker").date();
+					this.trip.reminder = $('#txtReminder').data("DateTimePicker").date();
 					if (this.trip.startDate && this.trip.endDate) {
 						this.trip.duration = this.getDays(new Date(this.trip.endDate).getTime() - new Date(this.trip.startDate).getTime());
 					}
@@ -155,9 +203,9 @@ System.register(['aurelia-framework', 'aurelia-dialog', './map', './weather'], f
 						for (var item in this.trip.todo) {
 							state &= this.trip.todo[item].status;
 						}
-						console.log(state);
 						this.trip.state = state ? 2 : 1;
 					}
+
 					if (this.currentIndex == null) {
 						this.trips.push(this.trip);
 						this.resetData();
@@ -166,6 +214,7 @@ System.register(['aurelia-framework', 'aurelia-dialog', './map', './weather'], f
 							this.tripTmp[v] = this.trip[v];
 						}
 					}
+
 					localStorage.setItem("tripPlannerData", JSON.stringify(this.trips));
 				};
 
@@ -202,14 +251,24 @@ System.register(['aurelia-framework', 'aurelia-dialog', './map', './weather'], f
 
 				TripPlanner.prototype.resetData = function resetData() {
 					this.currentIndex = null;
-					this.trip = { title: '',
+					$('#txtStartDate').data("DateTimePicker").minDate(moment());
+					$('#txtEndDate').data("DateTimePicker").minDate(moment());
+					$('#txtStartDate').data("DateTimePicker").date(moment());
+					$('#txtEndDate').data("DateTimePicker").date(moment());
+					$('#txtReminder').data("DateTimePicker").date(null);
+					$('#txtReminder').data("DateTimePicker").defaultDate(null);
+					this.trip = {
+						state: 0,
+						title: '',
 						dest: '',
+						category: 'None',
 						startDate: '',
-						category: '',
 						endDate: '',
+						duration: 0,
 						todo: [],
-						reminder: ''
-					};;
+						reminder: '',
+						dismiss: false
+					};
 				};
 
 				TripPlanner.prototype.todoStatusCheck = function todoStatusCheck(mouseEvent, item) {
@@ -217,51 +276,8 @@ System.register(['aurelia-framework', 'aurelia-dialog', './map', './weather'], f
 					return true;
 				};
 
-				TripPlanner.prototype.getStateStr = function getStateStr(state) {
-					if (state === 2) {
-						return 'Ready';
-					} else if (state === 1) {
-						return 'In Progress';
-					} else {
-						return 'Created';
-					}
-				};
-
-				TripPlanner.prototype.getReminderCSS = function getReminderCSS(reminder) {
-					if (reminder) {
-						var duration = this.getDays(new Date().getTime() - new Date(reminder).getTime());
-						if (duration == 0) {
-							return 'reminder';
-						}
-					}
-					return '';
-				};
-
 				return TripPlanner;
-			}(), _class2.inject = [DialogService], _temp), (_descriptor = _applyDecoratedDescriptor(_class.prototype, 'tripTmp', [bindable], {
-				enumerable: true,
-				initializer: null
-			}), _descriptor2 = _applyDecoratedDescriptor(_class.prototype, 'trip', [bindable], {
-				enumerable: true,
-				initializer: function initializer() {
-					return {
-						state: 0,
-						title: '',
-						dest: '',
-						category: '',
-						startDate: '',
-						endDate: '',
-						duration: 0,
-						todo: [],
-						reminder: ''
-					};
-				}
-			}), _descriptor3 = _applyDecoratedDescriptor(_class.prototype, 'trips', [bindable], {
-				enumerable: true,
-				initializer: function initializer() {
-					return [];
-				}
-			})), _class));
+			}(), _class.inject = [DialogService], _temp));
 
 			_export('TripPlanner', TripPlanner);
 		}
