@@ -152,7 +152,9 @@ System.register(['aurelia-framework', 'aurelia-dialog', './map', './weather', '.
 				};
 
 				TripPlanner.prototype.cancel = function cancel() {
-					if (this.currentIndex) {
+					if (this.currentIndex === null) {
+						this.resetData();
+					} else {
 						this.trip = JSON.parse(JSON.stringify(this.tripTmp));
 						$('#txtStartDate').data("DateTimePicker").minDate(moment(this.trip.startDate));
 						$('#txtStartDate').data("DateTimePicker").date(moment(this.trip.startDate));
@@ -163,8 +165,6 @@ System.register(['aurelia-framework', 'aurelia-dialog', './map', './weather', '.
 						} else {
 							$('#txtReminder').data("DateTimePicker").date(null);
 						}
-					} else {
-						this.resetData();
 					}
 				};
 

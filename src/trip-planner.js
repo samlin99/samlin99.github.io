@@ -183,7 +183,9 @@ export class TripPlanner {
 	cancel() {
 		// currentIndex is not nulll means that user is modifying existing trip
 		// otherwise, user is creating new trip but like to cancel
-		if(this.currentIndex) {
+		if(this.currentIndex === null) {
+			this.resetData();
+		} else {
 			this.trip = JSON.parse(JSON.stringify(this.tripTmp));
 			$('#txtStartDate').data("DateTimePicker").minDate(moment(this.trip.startDate));
 			$('#txtStartDate').data("DateTimePicker").date(moment(this.trip.startDate));
@@ -194,10 +196,7 @@ export class TripPlanner {
 			} else {
 				$('#txtReminder').data("DateTimePicker").date(null);
 			}			
-		} else {
-			this.resetData();
-		}
-
+		} 
 	}
 
   /*
